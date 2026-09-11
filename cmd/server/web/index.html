@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EVA Bharat Ticket System</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 18px; background: #f7f8fa; color: #1f2937; }
+    h1 { margin-bottom: 8px; }
+    .card { background: white; padding: 18px; margin: 16px 0; border: 1px solid #e5e7eb; border-radius: 10px; }
+    input, textarea, select, button { width: 100%; box-sizing: border-box; margin: 6px 0; padding: 10px; }
+    button { cursor: pointer; font-weight: 600; }
+    pre { white-space: pre-wrap; background: #111827; color: #f9fafb; padding: 14px; border-radius: 8px; min-height: 80px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <h1>Ticket System</h1>
+  <p>Small Golang backend demo for registration, JWT login, and user-owned tickets.</p>
+
+  <div class="card">
+    <h2>1. Register</h2>
+    <input id="regName" placeholder="Name (optional)">
+    <input id="regEmail" placeholder="Email" value="demo@example.com">
+    <input id="regPassword" type="password" placeholder="Password" value="demo123">
+    <button onclick="registerUser()">Register</button>
+  </div>
+
+  <div class="card">
+    <h2>2. Login</h2>
+    <input id="loginEmail" placeholder="Email" value="demo@example.com">
+    <input id="loginPassword" type="password" placeholder="Password" value="demo123">
+    <button onclick="loginUser()">Login</button>
+    <small>JWT is stored only in this browser tab.</small>
+  </div>
+
+  <div class="card">
+    <h2>3. Create Ticket</h2>
+    <input id="ticketTitle" placeholder="Title" value="Need help with my account">
+    <textarea id="ticketDescription" placeholder="Description">Demo ticket created from the frontend.</textarea>
+    <button onclick="createTicket()">Create Ticket</button>
+  </div>
+
+  <div class="card">
+    <h2>4. My Tickets</h2>
+    <button onclick="listTickets()">Refresh My Tickets</button>
+    <div class="row">
+      <input id="ticketId" type="number" min="1" placeholder="Ticket ID">
+      <select id="ticketStatus">
+        <option value="in_progress">in_progress</option>
+        <option value="closed">closed</option>
+      </select>
+    </div>
+    <button onclick="updateStatus()">Update Status</button>
+  </div>
+
+  <div class="card">
+    <h2>API Response</h2>
+    <pre id="output">Ready.</pre>
+  </div>
+
+<script>
+let token = "";
+const output = document.getElementById("output");
+
+async function callAPI(path, options = {}) {
+  options.headers = options.headers || {};
+  options.headers["Content-Type"] = "application/json";
+  if (token) options.headers["Authorization"] = "Bearer " + token;
+  const res = await fetch(path, options);
+  const data = await res.json().catch(() => ({}));
+  output.textContent = `HTTP ${res.status}\n` + JSON.stringify(data, null, 2);
+  return {res, data};
+}
+
+async function registerUser() {
+  await callAPI("/auth/register", {
+    method: "POST",
+    body: JSON.stringify({
+      name: document.getElementById("regName").value,
+      email: document.getElementById("regEmail").value,
+      password: document.getElementById("regPassword").value
+    })
+  });
+}
+
+async function loginUser() {
+  const result = await callAPI("/auth/login", {
+    method: "POST",
+    body: JSON.stringify({
+      email: document.getElementById("loginEmail").value,
+      password: document.getElementById("loginPassword").value
+    })
+  });
+  if (result.data.token) token = result.data.token;
+}
+
+async function createTicket() {
+  await callAPI("/tickets", {
+    method: "POST",
+    body: JSON.stringify({
+      title: document.getElementById("ticketTitle").value,
+      description: document.getElementById("ticketDescription").value
+    })
+  });
+}
+
+async function listTickets() {
+  await callAPI("/tickets", {method: "GET"});
+}
+
+async function updateStatus() {
+  const id = document.getElementById("ticketId").value;
+  const status = document.getElementById("ticketStatus").value;
+  await callAPI(`/tickets/${id}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({status})
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+server
+.git
+.env
+*.log
+.vscode
+.idea
