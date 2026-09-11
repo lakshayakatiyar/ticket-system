@@ -121,6 +121,6 @@ Use `.env.example` as a reference for environment variables. The application rea
 
 Deploy the same project on a free Go/Docker-compatible hosting service. After deployment, add the public application URL and `/health` URL here before submission.
 
-Deployment URL: _add after deployment_
+Deployment URL: https://ticket-system-zaaw.onrender.com
 
-Public health URL: _add after deployment_/health
+Public health URL: https://ticket-system-zaaw.onrender.com/health
